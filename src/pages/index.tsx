@@ -1,78 +1,143 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+// ===== IMPORTS =====
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// Sidebar UI components from shadcn/ui
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Separator component for visual dividers
+import { Separator } from "@/components/ui/separator";
 
-export default function Home() {
+// Custom sidebar components for different sidebar types
+import { MenuSidebar } from "@/components/menu-sidebar";
+import { NotificationsSidebar } from "@/components/notifications-sidebar";
+import { SettingsSidebar } from "@/components/settings-sidebar";
+
+// Context and hook for global sidebar state management
+import { SidebarControlProvider, useSidebarControl } from "@/contexts/sidebar-context";
+
+// Button component for toggle actions
+import { Button } from "@/components/ui/button";
+
+// Icons from lucide-react
+import { Bell, Menu, Settings } from "lucide-react";
+
+// ===== PAGE CONTENT COMPONENT =====
+/**
+ * PageContent - Main content component that uses the sidebar context
+ * This component must be wrapped by SidebarControlProvider to access sidebar state
+ */
+function PageContent() {
+  // Get current sidebar type and the function to open/switch sidebars from context
+  const { sidebarType, openSidebar } = useSidebarControl();
+
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black`}
-    >
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the index.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    // SidebarProvider manages the open/closed state of the sidebar
+    // defaultOpen={false} ensures sidebar starts in closed state
+    <SidebarProvider defaultOpen={false}>
+
+      {/* ===== CONDITIONAL SIDEBAR RENDERING ===== */}
+      {/* Only one sidebar is rendered at a time based on sidebarType from context */}
+      {/* When sidebarType is "menu", render the MenuSidebar component */}
+      {sidebarType === "menu" && <MenuSidebar />}
+
+      {/* When sidebarType is "notifications", render the NotificationsSidebar component */}
+      {sidebarType === "notifications" && <NotificationsSidebar />}
+
+      {/* When sidebarType is "settings", render the SettingsSidebar component */}
+      {sidebarType === "settings" && <SettingsSidebar />}
+
+      {/* ===== MAIN CONTENT AREA ===== */}
+      {/* Using plain main element instead of SidebarInset to prevent layout shift */}
+      {/* This ensures content stays full-width regardless of sidebar state */}
+      <main className="flex min-h-screen w-full flex-col bg-background">
+
+        {/* ===== HEADER SECTION ===== */}
+        {/* Fixed height header with navigation and controls */}
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+
+          {/* SidebarTrigger - Built-in button to toggle sidebar open/closed */}
+          {/* Negative margin aligns it properly with the layout */}
+          <SidebarTrigger className="-ml-1" />
+
+          {/* Vertical separator line between trigger and title */}
+          <Separator orientation="vertical" className="mr-2 h-4" />
+
+          {/* Page title */}
+          <h1 className="text-lg font-semibold">Dashboard</h1>
+
+          {/* ===== SIDEBAR TYPE TOGGLE BUTTONS ===== */}
+          {/* Container pushed to the right side of header */}
+          <div className="ml-auto flex items-center gap-2">
+
+            {/* Menu toggle button - highlighted when menu sidebar is active */}
+            <Button
+              variant={sidebarType === "menu" ? "default" : "outline"}
+              size="sm"
+              onClick={() => openSidebar("menu")}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <Menu className="size-4 mr-2" />
+              Menu
+            </Button>
+
+            {/* Notifications toggle button - highlighted when notifications sidebar is active */}
+            <Button
+              variant={sidebarType === "notifications" ? "default" : "outline"}
+              size="sm"
+              onClick={() => openSidebar("notifications")}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs/pages/getting-started?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+              <Bell className="size-4 mr-2" />
+              Notifications
+            </Button>
+
+            {/* Settings toggle button - highlighted when settings sidebar is active */}
+            <Button
+              variant={sidebarType === "settings" ? "default" : "outline"}
+              size="sm"
+              onClick={() => openSidebar("settings")}
+            >
+              <Settings className="size-4 mr-2" />
+              Settings
+            </Button>
+          </div>
+        </header>
+
+        {/* ===== MAIN CONTENT GRID ===== */}
+        {/* Flexible container with padding for the dashboard content */}
+        <div className="flex flex-1 flex-col gap-4 p-4">
+
+          {/* Top row - 3 cards in a responsive grid */}
+          {/* On mobile: stacked, on md and up: 3 columns */}
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            {/* Placeholder card 1 with video aspect ratio */}
+            <div className="aspect-video rounded-xl bg-muted/50" />
+
+            {/* Placeholder card 2 with video aspect ratio */}
+            <div className="aspect-video rounded-xl bg-muted/50" />
+
+            {/* Placeholder card 3 with video aspect ratio */}
+            <div className="aspect-video rounded-xl bg-muted/50" />
+          </div>
+
+          {/* Bottom area - Large content section */}
+          {/* Takes remaining vertical space, responsive min-height */}
+          <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" />
         </div>
       </main>
-    </div>
+    </SidebarProvider>
   );
 }
+
+// ===== DEFAULT PAGE EXPORT =====
+/**
+ * Page - Root component for the index page
+ * Wraps PageContent with SidebarControlProvider to provide sidebar context
+ * This is the component that Next.js will render for the home route
+ */
+export default function Page() {
+  return (
+    // SidebarControlProvider makes sidebar state available to all child components
+    <SidebarControlProvider>
+      <PageContent />
+    </SidebarControlProvider>
+  );
+}
+
